@@ -10,12 +10,10 @@
 #include <QTextStream>
 #include <QMessageBox>
 #include <QSettings>
-bool m_bPressed=false,hsis=false,contg=true,ised=false;
+bool m_bPressed=false,hsis=true,contg=true,ised=false,maxi=false;
 int history=0;
 QPoint m_point;
 QString filedir;
-QToolButton *minButton;
-QToolButton *closeButton;
 QList<QString> hisdata;
 
 void MainWindow::loadfile(){
@@ -147,23 +145,14 @@ MainWindow::MainWindow(QWidget *parent)
     setWindowFlags(Qt::FramelessWindowHint);
     setWindowTitle("Random 6.1.0beta");
     setMinimumSize(size());
-    minButton = new QToolButton(this);
-    closeButton = new QToolButton(this);
-    QPixmap minPix  = style()->standardPixmap(QStyle::SP_TitleBarMinButton);
-    QPixmap closePix = style()->standardPixmap(QStyle::SP_TitleBarCloseButton);
-    minButton->setIcon(minPix);
-    closeButton->setIcon(closePix);
-    minButton->setGeometry(width()-45,5,20,20);
-    closeButton->setGeometry(width()-25,5,20,20);
-    minButton->setStyleSheet("background-color:transparent;");
-    closeButton->setStyleSheet("background-color:transparent;");
-    connect(closeButton, SIGNAL(clicked()), this, SLOT(exitapp()));
-    connect(minButton, SIGNAL(clicked()), this, SLOT(showMinimized()));
+    ui->pushButton_19->setIcon(QApplication::style()->standardIcon((QStyle::StandardPixmap)1));
+    ui->pushButton_21->setIcon(QApplication::style()->standardIcon((QStyle::StandardPixmap)4));
+    ui->pushButton_20->setIcon(QApplication::style()->standardIcon((QStyle::StandardPixmap)3));
     ui->label->setAlignment(Qt::AlignCenter);
     ui->label_2->setAlignment(Qt::AlignCenter);
     ui->label_3->setAlignment(Qt::AlignCenter);
     ui->label_4->setAlignment(Qt::AlignCenter);
-    ui->frame->setVisible(false);
+    ui->horizontalLayout_6->setEnabled(false);
     QString className("RandSeq6");
     QString ext(".ranlist");
     QString extDes("Random List");
@@ -191,7 +180,7 @@ void MainWindow::on_pushButton_clicked()
         return;
     }
     QFileInfo fi(filedir);
-    ui->label->setText(fi.fileName()+"-RandSeq 6.1.0 beta");//set titlebar text
+    ui->label->setText(fi.fileName()+" @ RandSeq 7 Prasinos");//set titlebar text
     loadfile();
 }
 
@@ -226,7 +215,7 @@ void MainWindow::on_pushButton_6_clicked()
 {
     filedir=QFileDialog::getSaveFileName(this,"Save File",".ranlist","Random Lists(*ranlist)");//select file
     QFileInfo fi(filedir);
-    ui->label->setText(fi.fileName()+"-RandSeq 6.1.0 beta");//set titlebar text
+    ui->label->setText(fi.fileName()+" @ RandSeq 7 Prasinos");//set titlebar text
     savefile();
     procsave();
 }
@@ -265,6 +254,7 @@ void MainWindow::on_pushButton_4_clicked()
     contg=true;
     int cnt=0;
     updaterem(0);
+    srand(time(0));
     while(contg){
         if(ui->checkBox_2->isChecked())
             if(hisdata.contains(ui->label_3->text()))
@@ -287,6 +277,7 @@ void MainWindow::on_pushButton_4_clicked()
         if(tmp!=-1)updaterem(tmp);
         history++;
     }
+    else updaterem(rand()%ui->listWidget->count());
     if(ui->checkBox_2->isChecked())
         hisdata.append(ui->label_3->text());
 }
@@ -309,12 +300,12 @@ void MainWindow::on_pushButton_11_clicked()
 void MainWindow::on_pushButton_12_clicked()
 {
     if(hsis){
-        ui->frame->setVisible(false);
+        procHidSeq(false);
         ui->pushButton_12->setText("Show Hidden Sequence");
         hsis=false;
     }
     else{
-        ui->frame->setVisible(true);
+        procHidSeq(true);
         ui->pushButton_12->setText("Hide Hidden Sequence");
         hsis=true;
     }
@@ -373,15 +364,40 @@ void MainWindow::on_pushButton_17_clicked()
     history=0;
 }
 
-
-void MainWindow::on_listWidget_itemDoubleClicked(QListWidgetItem *item)
+void MainWindow::on_pushButton_18_clicked()
 {
-    item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEditable|Qt::ItemIsDragEnabled|Qt::ItemIsUserCheckable|Qt::ItemIsEnabled);
+    if(ui->listWidget->currentRow()==-1)return;
+    ui->listWidget->currentItem()->setText(ui->lineEdit_5->text());
+    ui->lineEdit_5->clear();
 }
 
-
-void MainWindow::on_listWidget_2_itemDoubleClicked(QListWidgetItem *item)
+void MainWindow::on_pushButton_19_clicked()
 {
-    item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEditable|Qt::ItemIsDragEnabled|Qt::ItemIsUserCheckable|Qt::ItemIsEnabled);
+    showMinimized();
 }
 
+void MainWindow::on_pushButton_20_clicked()
+{
+    QApplication::exit();
+}
+
+void MainWindow::on_pushButton_21_clicked()
+{
+    if(maxi){
+        showNormal();
+        maxi=false;
+    }
+    else{
+        showMaximized();
+        maxi=true;
+    }
+}
+
+void MainWindow::procHidSeq(bool proc){
+    ui->listWidget_2->setVisible(proc);
+    ui->comboBox->setVisible(proc);
+    ui->pushButton_10->setVisible(proc);
+    ui->pushButton_14->setVisible(proc);
+    ui->pushButton_15->setVisible(proc);
+    ui->pushButton_16->setVisible(proc);
+}
